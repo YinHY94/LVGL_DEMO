@@ -6,6 +6,8 @@
 /*Copy this file as "lv_port_disp.c" and set this value to "1" to enable content*/
 
 
+#include "r_gpt.h"
+#include "r_timer_api.h"
 #if 1
 
 /*********************
@@ -22,12 +24,12 @@
  *      DEFINES
  *********************/
 #ifndef MY_DISP_HOR_RES
-    #warning Please define or replace the macro MY_DISP_HOR_RES with the actual screen width, default value 320 is used for now.
+    //#warning Please define or replace the macro MY_DISP_HOR_RES with the actual screen width, default value 320 is used for now.
     #define MY_DISP_HOR_RES    320
 #endif
 
 #ifndef MY_DISP_VER_RES
-    #warning Please define or replace the macro MY_DISP_HOR_RES with the actual screen height, default value 240 is used for now.
+    //#warning Please define or replace the macro MY_DISP_HOR_RES with the actual screen height, default value 240 is used for now.
     #define MY_DISP_VER_RES    240
 #endif
 
@@ -47,7 +49,12 @@
 /**********************
  *      TYPEDEFS
  **********************/
-
+typedef enum
+{
+    spi_idle=0,
+    spi_cmd,
+    spi_data
+} spi_send_status;
 /**********************
  *  STATIC PROTOTYPES
  **********************/
@@ -61,10 +68,16 @@ static void lcd_send_cmd(uint8_t cmd, const uint8_t * data, size_t len);
  *  STATIC VARIABLES
  **********************/
 static lv_disp_drv_t g_disp_drv;
+static volatile spi_send_status g_spi_status = spi_idle;
 /**********************
  *      MACROS
  **********************/
 
+ /**********************
+ *  GLOBAL VARIABLES
+ **********************/
+
+volatile bool g_flush_done = false;
 /**********************
  *   GLOBAL FUNCTIONS
  **********************/
@@ -108,9 +121,9 @@ void lv_port_disp_init(void)
 
     /* Example for 2) */
     static lv_disp_draw_buf_t draw_buf_dsc_2;
-    static lv_color_t buf_2_1[MY_DISP_HOR_RES * 10];                        /*A buffer for 10 rows*/
-    static lv_color_t buf_2_2[MY_DISP_HOR_RES * 10];                        /*An other buffer for 10 rows*/
-    lv_disp_draw_buf_init(&draw_buf_dsc_2, buf_2_1, buf_2_2, MY_DISP_HOR_RES * 10);   /*Initialize the display buffer*/
+    static lv_color_t buf_2_1[MY_DISP_HOR_RES * 24];                        /*A buffer for 10 rows*/
+    static lv_color_t buf_2_2[MY_DISP_HOR_RES * 24];                        /*An other buffer for 10 rows*/
+    lv_disp_draw_buf_init(&draw_buf_dsc_2, buf_2_1, buf_2_2, MY_DISP_HOR_RES * 24);   /*Initialize the display buffer*/
 
     // /* Example for 3) also set disp_drv.full_refresh = 1 below*/
     // static lv_disp_draw_buf_t draw_buf_dsc_3;
@@ -154,15 +167,22 @@ void oled_spi_callback(spi_callback_args_t * p_args)
 {
     if (SPI_EVENT_TRANSFER_COMPLETE == p_args->event)
     {
-        /* 传输完成，拉高片选 */
         R_IOPORT_PinWrite(&g_ioport_ctrl, OLED_CS_PIN, BSP_IO_LEVEL_HIGH);
+        if (g_spi_status == spi_data)
+        {
+            g_flush_done = true;
+        }
+
+        g_spi_status = spi_idle;
         
-        /* 释放信号量，通知任务传输已完成 */
-        tx_semaphore_put(&g_oled_spi_semaphore);
-        
-        /* LVGL 8.3: 告知内核 flush 已完成 */
-        /* 注意：在 8.3 中，disp_drv 此时作为参数通过指针间接获取或直接使用全局 */
-        lv_disp_flush_ready(&g_disp_drv);
+    }
+}
+
+void lvgl_tick_callback(timer_callback_args_t *p_args)
+{
+    if (p_args->event == TIMER_EVENT_CYCLE_END)
+    {
+        lv_tick_inc(1);
     }
 }
 
@@ -172,25 +192,23 @@ void oled_spi_callback(spi_callback_args_t * p_args)
 
 static void lcd_send_cmd(uint8_t cmd, const uint8_t * data, size_t len)
 {
-    tx_semaphore_get(&g_oled_spi_semaphore, TX_WAIT_FOREVER);
-
     R_IOPORT_PinWrite(&g_ioport_ctrl, OLED_CS_PIN, BSP_IO_LEVEL_LOW);
     R_IOPORT_PinWrite(&g_ioport_ctrl, OLED_DC_PIN, BSP_IO_LEVEL_LOW);
-    
-    R_SPI_Write(&oled_spi_ctrl, &cmd, 1, SPI_BIT_WIDTH_8_BITS);
-    
-    /* 等待命令字节发送完成 */
-    tx_semaphore_get(&g_oled_spi_semaphore, TX_WAIT_FOREVER);
 
-    if(len > 0) {
-        R_IOPORT_PinWrite(&g_ioport_ctrl, OLED_DC_PIN, BSP_IO_LEVEL_HIGH);
-        R_SPI_Write(&oled_spi_ctrl, data, (uint32_t)len, SPI_BIT_WIDTH_8_BITS);
-        
-        /* 等待数据发送完成 */
-        tx_semaphore_get(&g_oled_spi_semaphore, TX_WAIT_FOREVER);
-    }
+    g_spi_status= spi_cmd;
+    R_SPI_Write(&oled_spi_ctrl, &cmd, 1, SPI_BIT_WIDTH_8_BITS);
+    while(g_spi_status == spi_cmd);
     
-    tx_semaphore_put(&g_oled_spi_semaphore);
+
+    if (len > 0)
+    {
+        g_spi_status= spi_cmd;
+        R_IOPORT_PinWrite(&g_ioport_ctrl, OLED_DC_PIN, BSP_IO_LEVEL_HIGH);
+        R_SPI_Write(&oled_spi_ctrl, data, len, SPI_BIT_WIDTH_8_BITS);
+        while(g_spi_status == spi_cmd);
+    }
+
+    R_IOPORT_PinWrite(&g_ioport_ctrl, OLED_CS_PIN, BSP_IO_LEVEL_HIGH);
 }
 
 /*Initialize your display and the required peripherals.*/
@@ -198,6 +216,8 @@ static void disp_init(void)
 {
     R_SPI_Open(&oled_spi_ctrl, &oled_spi_cfg);
 
+    R_GPT_Open(&lvgl_tick_timer_ctrl, &lvgl_tick_timer_cfg);
+    R_GPT_Start(&lvgl_tick_timer_ctrl);
     R_IOPORT_PinWrite(&g_ioport_ctrl, OLED_RESET_PIN, BSP_IO_LEVEL_LOW);
     R_BSP_SoftwareDelay(100, BSP_DELAY_UNITS_MILLISECONDS);
     R_IOPORT_PinWrite(&g_ioport_ctrl, OLED_RESET_PIN, BSP_IO_LEVEL_HIGH);
@@ -205,7 +225,6 @@ static void disp_init(void)
 
     /* ST7789 初始化 */
     lcd_send_cmd(ST7789_SLPOUT, NULL, 0); 
-    R_BSP_SoftwareDelay(120, BSP_DELAY_UNITS_MILLISECONDS);
     
     uint8_t colmod = 0x55; /* 16-bit RGB565 */
     lcd_send_cmd(ST7789_COLMOD, &colmod, 1);
@@ -237,7 +256,12 @@ void disp_disable_update(void)
  *'lv_disp_flush_ready()' has to be called when finished.*/
 static void disp_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t * color_p)
 {
-    if(!disp_flush_enabled) {
+    if (g_spi_status != spi_idle)
+    {
+        return;
+    }
+
+    if((!disp_flush_enabled)) {
         lv_disp_flush_ready(disp_drv);
         return;
     }
@@ -261,17 +285,25 @@ static void disp_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_colo
     /* 准备写入 RAM */
     lcd_send_cmd(ST7789_RAMWR, NULL, 0);
 
-    /* 获取信号量，开始大块数据传输 */
-    tx_semaphore_get(&g_oled_spi_semaphore, TX_WAIT_FOREVER);
 
     R_IOPORT_PinWrite(&g_ioport_ctrl, OLED_CS_PIN, BSP_IO_LEVEL_LOW);
     R_IOPORT_PinWrite(&g_ioport_ctrl, OLED_DC_PIN, BSP_IO_LEVEL_HIGH); 
 
     /* 计算像素字节数 (RGB565 = 2 bytes per pixel) */
-    uint32_t size_in_bytes = (uint32_t)((lv_area_get_width(area) * lv_area_get_height(area)) * sizeof(lv_color_t));
+    uint32_t size = (uint32_t)((lv_area_get_width(area) * lv_area_get_height(area)) * sizeof(lv_color_t));
 
     /* 开启非阻塞传输 */
-    R_SPI_Write(&oled_spi_ctrl, (uint8_t *)color_p, size_in_bytes, SPI_BIT_WIDTH_8_BITS);
+    g_spi_status = spi_data;
+    fsp_err_t err = R_SPI_Write(&oled_spi_ctrl, (uint8_t *)color_p, size, SPI_BIT_WIDTH_8_BITS);
+
+    if (FSP_SUCCESS != err)
+    {
+        /* 启动失败，必须立即释放 LVGL */
+        R_IOPORT_PinWrite(&g_ioport_ctrl, OLED_CS_PIN, BSP_IO_LEVEL_HIGH);
+        g_spi_status = spi_idle;
+        lv_disp_flush_ready(disp_drv);
+    }
+
 }
 
 /*OPTIONAL: GPU INTERFACE*/

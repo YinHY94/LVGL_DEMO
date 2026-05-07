@@ -1,0 +1,174 @@
+{
+	"inputs" : 
+	[
+		{
+			"path" : "CMakeLists.txt"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "build/Debug/CMakeFiles/3.31.8/CMakeSystem.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/z/.renesas/platform/cmake/3.31.8/cmake-3.31.8-windows-x86_64/share/cmake-3.31/Modules/CMakeSystemSpecificInitialize.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "build/Debug/CMakeFiles/3.31.8/CMakeCCompiler.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "build/Debug/CMakeFiles/3.31.8/CMakeCXXCompiler.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "build/Debug/CMakeFiles/3.31.8/CMakeASMCompiler.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/z/.renesas/platform/cmake/3.31.8/cmake-3.31.8-windows-x86_64/share/cmake-3.31/Modules/CMakeSystemSpecificInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/z/.renesas/platform/cmake/3.31.8/cmake-3.31.8-windows-x86_64/share/cmake-3.31/Modules/CMakeGenericSystem.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/z/.renesas/platform/cmake/3.31.8/cmake-3.31.8-windows-x86_64/share/cmake-3.31/Modules/CMakeInitializeConfigs.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/z/.renesas/platform/cmake/3.31.8/cmake-3.31.8-windows-x86_64/share/cmake-3.31/Modules/Platform/Generic.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/z/.renesas/platform/cmake/3.31.8/cmake-3.31.8-windows-x86_64/share/cmake-3.31/Modules/CMakeCInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/z/.renesas/platform/cmake/3.31.8/cmake-3.31.8-windows-x86_64/share/cmake-3.31/Modules/CMakeLanguageInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/z/.renesas/platform/cmake/3.31.8/cmake-3.31.8-windows-x86_64/share/cmake-3.31/Modules/Compiler/GNU-C.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/z/.renesas/platform/cmake/3.31.8/cmake-3.31.8-windows-x86_64/share/cmake-3.31/Modules/Compiler/GNU.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/z/.renesas/platform/cmake/3.31.8/cmake-3.31.8-windows-x86_64/share/cmake-3.31/Modules/Compiler/CMakeCommonCompilerMacros.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/z/.renesas/platform/cmake/3.31.8/cmake-3.31.8-windows-x86_64/share/cmake-3.31/Modules/Platform/Generic.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/z/.renesas/platform/cmake/3.31.8/cmake-3.31.8-windows-x86_64/share/cmake-3.31/Modules/CMakeCommonLanguageInclude.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/z/.renesas/platform/cmake/3.31.8/cmake-3.31.8-windows-x86_64/share/cmake-3.31/Modules/Internal/CMakeCLinkerInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/z/.renesas/platform/cmake/3.31.8/cmake-3.31.8-windows-x86_64/share/cmake-3.31/Modules/Internal/CMakeCommonLinkerInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/z/.renesas/platform/cmake/3.31.8/cmake-3.31.8-windows-x86_64/share/cmake-3.31/Modules/CMakeCXXInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/z/.renesas/platform/cmake/3.31.8/cmake-3.31.8-windows-x86_64/share/cmake-3.31/Modules/CMakeLanguageInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/z/.renesas/platform/cmake/3.31.8/cmake-3.31.8-windows-x86_64/share/cmake-3.31/Modules/Compiler/GNU-CXX.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/z/.renesas/platform/cmake/3.31.8/cmake-3.31.8-windows-x86_64/share/cmake-3.31/Modules/Compiler/GNU.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/z/.renesas/platform/cmake/3.31.8/cmake-3.31.8-windows-x86_64/share/cmake-3.31/Modules/Platform/Generic.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/z/.renesas/platform/cmake/3.31.8/cmake-3.31.8-windows-x86_64/share/cmake-3.31/Modules/CMakeCommonLanguageInclude.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/z/.renesas/platform/cmake/3.31.8/cmake-3.31.8-windows-x86_64/share/cmake-3.31/Modules/Internal/CMakeCXXLinkerInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/z/.renesas/platform/cmake/3.31.8/cmake-3.31.8-windows-x86_64/share/cmake-3.31/Modules/Internal/CMakeCommonLinkerInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/z/.renesas/platform/cmake/3.31.8/cmake-3.31.8-windows-x86_64/share/cmake-3.31/Modules/CMakeASMInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/z/.renesas/platform/cmake/3.31.8/cmake-3.31.8-windows-x86_64/share/cmake-3.31/Modules/Compiler/GNU-ASM.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/z/.renesas/platform/cmake/3.31.8/cmake-3.31.8-windows-x86_64/share/cmake-3.31/Modules/Compiler/GNU.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/z/.renesas/platform/cmake/3.31.8/cmake-3.31.8-windows-x86_64/share/cmake-3.31/Modules/Internal/CMakeASMLinkerInformation.cmake"
+		},
+		{
+			"path" : "Config.cmake"
+		},
+		{
+			"path" : "cmake/GeneratedCfg.cmake"
+		},
+		{
+			"path" : "cmake/GeneratedSrc.cmake"
+		}
+	],
+	"kind" : "cmakeFiles",
+	"paths" : 
+	{
+		"build" : "D:/Renesas/R7FA6M5BF3CFP/lvgl_demo/build/Debug",
+		"source" : "D:/Renesas/R7FA6M5BF3CFP/lvgl_demo"
+	},
+	"version" : 
+	{
+		"major" : 1,
+		"minor" : 1
+	}
+}

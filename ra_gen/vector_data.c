@@ -8,6 +8,7 @@
             [1] = spi_tei_isr, /* SPI0 TEI (Transmission complete event) */
             [2] = spi_eri_isr, /* SPI0 ERI (Error) */
             [3] = dmac_int_isr, /* DMAC0 INT (DMAC0 transfer end) */
+            [4] = gpt_counter_overflow_isr, /* GPT0 COUNTER OVERFLOW (Overflow) */
         };
         #if BSP_FEATURE_ICU_HAS_IELSR
         const bsp_interrupt_event_t g_interrupt_event_link_select[BSP_ICU_VECTOR_NUM_ENTRIES] =
@@ -16,6 +17,7 @@
             [1] = BSP_PRV_VECT_ENUM(EVENT_SPI0_TEI,GROUP1), /* SPI0 TEI (Transmission complete event) */
             [2] = BSP_PRV_VECT_ENUM(EVENT_SPI0_ERI,GROUP2), /* SPI0 ERI (Error) */
             [3] = BSP_PRV_VECT_ENUM(EVENT_DMAC0_INT,GROUP3), /* DMAC0 INT (DMAC0 transfer end) */
+            [4] = BSP_PRV_VECT_ENUM(EVENT_GPT0_COUNTER_OVERFLOW,GROUP4), /* GPT0 COUNTER OVERFLOW (Overflow) */
         };
         #endif
         #endif

@@ -4,10 +4,22 @@
 #include <stdint.h>
 #include "bsp_api.h"
 #include "common_data.h"
+#include "r_gpt.h"
+#include "r_timer_api.h"
 #include "r_dmac.h"
 #include "r_transfer_api.h"
 #include "r_spi.h"
 FSP_HEADER
+/** Timer on GPT Instance. */
+extern const timer_instance_t lvgl_tick_timer;
+
+/** Access the GPT instance using these structures when calling API functions directly (::p_api is not used). */
+extern gpt_instance_ctrl_t lvgl_tick_timer_ctrl;
+extern const timer_cfg_t lvgl_tick_timer_cfg;
+
+#ifndef lvgl_tick_callback
+void lvgl_tick_callback(timer_callback_args_t * p_args);
+#endif
 /* Transfer on DMAC Instance. */
 extern const transfer_instance_t g_transfer0;
 

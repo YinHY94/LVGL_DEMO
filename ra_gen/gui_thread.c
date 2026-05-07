@@ -4,7 +4,7 @@
 TX_THREAD gui_thread;
                 void gui_thread_create(void);
                 static void gui_thread_func(ULONG thread_input);
-                static uint8_t gui_thread_stack[1024] BSP_PLACE_IN_SECTION(BSP_UNINIT_SECTION_PREFIX ".stack.gui_thread") BSP_ALIGN_VARIABLE(BSP_STACK_ALIGNMENT);
+                static uint8_t gui_thread_stack[8192] BSP_PLACE_IN_SECTION(BSP_UNINIT_SECTION_PREFIX ".stack.gui_thread") BSP_ALIGN_VARIABLE(BSP_STACK_ALIGNMENT);
                 void tx_startup_err_callback(void * p_instance, void * p_data);
                 void tx_startup_common_init(void);
 extern bool         g_fsp_common_initialized;
@@ -26,7 +26,7 @@ extern bool         g_fsp_common_initialized;
                         gui_thread_func,
                         (ULONG) NULL,
                         &gui_thread_stack,
-                        1024,
+                        8192,
                         1,
                         1,
                         1,
