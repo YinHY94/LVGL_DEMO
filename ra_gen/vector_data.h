@@ -22,8 +22,8 @@
         #define SPI0_TEI_IRQn          ((IRQn_Type) 1) /* SPI0 TEI (Transmission complete event) */
         #define VECTOR_NUMBER_SPI0_ERI ((IRQn_Type) 2) /* SPI0 ERI (Error) */
         #define SPI0_ERI_IRQn          ((IRQn_Type) 2) /* SPI0 ERI (Error) */
-        #define VECTOR_NUMBER_DMAC0_INT ((IRQn_Type) 3) /* DMAC0 INT (DMAC0 transfer end) */
-        #define DMAC0_INT_IRQn          ((IRQn_Type) 3) /* DMAC0 INT (DMAC0 transfer end) */
+        #define VECTOR_NUMBER_DMAC1_INT ((IRQn_Type) 3) /* DMAC1 INT (DMAC1 transfer end) */
+        #define DMAC1_INT_IRQn          ((IRQn_Type) 3) /* DMAC1 INT (DMAC1 transfer end) */
         #define VECTOR_NUMBER_GPT0_COUNTER_OVERFLOW ((IRQn_Type) 4) /* GPT0 COUNTER OVERFLOW (Overflow) */
         #define GPT0_COUNTER_OVERFLOW_IRQn          ((IRQn_Type) 4) /* GPT0 COUNTER OVERFLOW (Overflow) */
         /* The number of entries required for the ICU vector table. */

@@ -272,10 +272,10 @@
       <property id="module.driver.ioport.pincfg" value="g_bsp_pin_cfg"/>
     </module>
     <module id="module.middleware.rm_threadx_port.0"/>
-    <module id="module.driver.spi_on_spi.490925739">
+    <module id="module.driver.spi_on_spi.1523284929">
       <property id="module.driver.spi.name" value="oled_spi"/>
       <property id="module.driver.spi.channel" value="0"/>
-      <property id="module.driver.spi.rxi_ipl" value="board.icu.common.irq.priority12"/>
+      <property id="module.driver.spi.rxi_ipl" value="board.icu.common.irq.priority10"/>
       <property id="module.driver.spi.txi_ipl" value="_disabled"/>
       <property id="module.driver.spi.tei_ipl" value="board.icu.common.irq.priority12"/>
       <property id="module.driver.spi.eri_ipl" value="board.icu.common.irq.priority12"/>
@@ -292,14 +292,14 @@
       <property id="module.driver.spi.mosi_idle_value_fixing" value="module.driver.spi.mosi_idle_value_fixing.disable"/>
       <property id="module.driver.spi.parity" value="module.driver.spi.parity_mode.disable"/>
       <property id="module.driver.spi.byte_swap" value="module.driver.spi.byte_swap.disable"/>
-      <property id="module.driver.spi.bitrate" value="16000000"/>
+      <property id="module.driver.spi.bitrate" value="4000000"/>
       <property id="module.driver.spi.spck_delay" value="module.driver.spi.spck_delay.one"/>
       <property id="module.driver.spi.ssl_negation_delay" value="module.driver.spi.ssl_negation_delay.one"/>
       <property id="module.driver.spi.next_access_delay" value="module.driver.spi.next_access_delay.one"/>
     </module>
-    <module id="module.driver.transfer_on_dmac.1458552985">
-      <property id="module.driver.transfer.name" value="g_transfer0"/>
-      <property id="module.driver.transfer.channel" value="0"/>
+    <module id="module.driver.transfer_on_dmac.2017762977">
+      <property id="module.driver.transfer.name" value="g_transfer1"/>
+      <property id="module.driver.transfer.channel" value="1"/>
       <property id="module.driver.transfer.mode" value="module.driver.transfer.mode.mode_normal"/>
       <property id="module.driver.transfer.size" value="module.driver.transfer.size.size_1_byte"/>
       <property id="module.driver.transfer.dest_addr_mode" value="module.driver.transfer.dest_addr_mode.addr_mode_fixed"/>
@@ -309,12 +309,12 @@
       <property id="module.driver.transfer.num_blocks" value="0"/>
       <property id="module.driver.transfer.activation_event" value="enum.elc_none.none"/>
       <property id="module.driver.transfer.p_callback" value="NULL"/>
-      <property id="module.driver.transfer.ipl" value="board.icu.common.irq.priority10"/>
+      <property id="module.driver.transfer.ipl" value="board.icu.common.irq.priority8"/>
       <property id="module.driver.transfer.interrupt" value="module.driver.transfer.interrupt.interrupt_end"/>
       <property id="module.driver.transfer.offset" value="1"/>
       <property id="module.driver.transfer.src.buffer" value="1"/>
     </module>
-    <module id="module.driver.timer_on_gpt.356086311">
+    <module id="module.driver.timer_on_gpt.1206760944">
       <property id="module.driver.timer.name" value="lvgl_tick_timer"/>
       <property id="module.driver.timer.channel" value="0"/>
       <property id="module.driver.timer.mode" value="module.driver.timer.mode.mode_periodic"/>
@@ -376,10 +376,6 @@
     <context id="_hal.0">
       <stack module="module.driver.ioport_on_ioport.0"/>
       <stack module="module.middleware.rm_threadx_port.0"/>
-      <stack module="module.driver.spi_on_spi.490925739">
-        <stack module="module.driver.transfer_on_dmac.1458552985" requires="module.driver.spi_on_spi.requires.transfer_tx"/>
-      </stack>
-      <stack module="module.driver.timer_on_gpt.356086311"/>
     </context>
     <context id="rtos.threadx.thread.0">
       <property id="_symbol" value="gui_thread"/>
@@ -388,6 +384,10 @@
       <property id="rtos.threadx.thread.priority" value="1"/>
       <property id="rtos.threadx.thread.autostart" value="rtos.threadx.thread.autostart.enabled"/>
       <property id="rtos.threadx.thread.timeslice" value="1"/>
+      <stack module="module.driver.spi_on_spi.1523284929">
+        <stack module="module.driver.transfer_on_dmac.2017762977" requires="module.driver.spi_on_spi.requires.transfer_tx"/>
+      </stack>
+      <stack module="module.driver.timer_on_gpt.1206760944"/>
     </context>
     <config id="config.driver.dmac">
       <property id="config.driver.dmac.param_checking_enable" value="config.driver.dmac.param_checking_enable.bsp"/>

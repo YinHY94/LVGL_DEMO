@@ -315,10 +315,18 @@ FSP Configuration
       Pin Configuration Name: g_bsp_pin_cfg
       
     Instance "Azure RTOS ThreadX Port (rm_threadx_port)"
+  Thread "GUI Thread"
+    Symbol: gui_thread
+    Name: GUI Thread
+    Stack size (bytes): 8192
+    Priority: 1
+    Auto start: Enabled
+    Time slicing interval (ticks): 1
+    
     Instance "oled_spi SPI (r_spi)"
       Name: oled_spi
       Channel: 0
-      Receive Interrupt Priority: Priority 12
+      Receive Interrupt Priority: Priority 10
       Transmit Buffer Empty Interrupt Priority: Disabled
       Transfer Complete Interrupt Priority: Priority 12
       Error Interrupt Priority: Priority 12
@@ -335,14 +343,14 @@ FSP Configuration
       MOSI Idle State: MOSI Idle Value Fixing Disable
       Parity Mode: Disabled
       Byte Swapping: Disable
-      Bitrate: 16000000
+      Bitrate: 4000000
       Clock Delay: 1 Clock
       SSL Negation Delay: 1 Clock
       Next Access Delay: 1 Clock
       
-      Instance "g_transfer0 Transfer (r_dmac) SPI0 TXI (Transmit buffer empty)"
-        Name: g_transfer0
-        Channel: 0
+      Instance "g_transfer1 Transfer (r_dmac) SPI0 TXI (Transmit buffer empty)"
+        Name: g_transfer1
+        Channel: 1
         Mode: Normal
         Transfer Size: 1 Byte
         Destination Address Mode: Fixed
@@ -352,7 +360,7 @@ FSP Configuration
         Number of Blocks (Valid only in Repeat,Block or Repeat-Block Mode): 0
         Activation Source: SPI0 TXI (Transmit buffer empty)
         Callback: oled_spi_tx_transfer_callback
-        Transfer End Interrupt Priority: Priority 10
+        Transfer End Interrupt Priority: Priority 8
         Interrupt Frequency: Interrupt after all transfers have completed
         Offset value (Valid only when address mode is Offset addition): 1
         Source Buffer Size: 1
@@ -411,14 +419,6 @@ FSP Configuration
       Extra Features: Output Disable: GTIOCA Disable Setting: Disable Prohibited
       Extra Features: Output Disable: GTIOCB Disable Setting: Disable Prohibited
       
-  Thread "GUI Thread"
-    Symbol: gui_thread
-    Name: GUI Thread
-    Stack size (bytes): 8192
-    Priority: 1
-    Auto start: Enabled
-    Time slicing interval (ticks): 1
-    
   Object "g_oled_spi_semaphore Semaphore"
     Name: OLED SPI Semaphore
     Symbol: g_oled_spi_semaphore

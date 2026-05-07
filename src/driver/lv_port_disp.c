@@ -6,8 +6,10 @@
 /*Copy this file as "lv_port_disp.c" and set this value to "1" to enable content*/
 
 
+#include "gui_thread.h"
 #include "r_gpt.h"
 #include "r_timer_api.h"
+#include "tx_api.h"
 #if 1
 
 /*********************
@@ -17,9 +19,7 @@
 #include <stdbool.h>
 #include "r_spi.h"
 #include "r_spi_api.h"
-#include "tx_api.h"
 #include "common_data.h"
-#include "hal_data.h"
 /*********************
  *      DEFINES
  *********************/
@@ -77,8 +77,7 @@ static volatile spi_send_status g_spi_status = spi_idle;
  *  GLOBAL VARIABLES
  **********************/
 
-volatile bool g_flush_done = false;
-/**********************
+ /**********************
  *   GLOBAL FUNCTIONS
  **********************/
 
@@ -170,9 +169,10 @@ void oled_spi_callback(spi_callback_args_t * p_args)
         R_IOPORT_PinWrite(&g_ioport_ctrl, OLED_CS_PIN, BSP_IO_LEVEL_HIGH);
         if (g_spi_status == spi_data)
         {
-            g_flush_done = true;
+            
+            lv_disp_flush_ready(&g_disp_drv);
         }
-
+        tx_semaphore_put(&g_oled_spi_semaphore);
         g_spi_status = spi_idle;
         
     }
@@ -192,23 +192,26 @@ void lvgl_tick_callback(timer_callback_args_t *p_args)
 
 static void lcd_send_cmd(uint8_t cmd, const uint8_t * data, size_t len)
 {
+    tx_semaphore_get(&g_oled_spi_semaphore, TX_WAIT_FOREVER);
     R_IOPORT_PinWrite(&g_ioport_ctrl, OLED_CS_PIN, BSP_IO_LEVEL_LOW);
     R_IOPORT_PinWrite(&g_ioport_ctrl, OLED_DC_PIN, BSP_IO_LEVEL_LOW);
-
+    R_BSP_SoftwareDelay(1, BSP_DELAY_UNITS_MICROSECONDS);
     g_spi_status= spi_cmd;
     R_SPI_Write(&oled_spi_ctrl, &cmd, 1, SPI_BIT_WIDTH_8_BITS);
-    while(g_spi_status == spi_cmd);
+
     
 
     if (len > 0)
     {
+        tx_semaphore_get(&g_oled_spi_semaphore, TX_WAIT_FOREVER);
         g_spi_status= spi_cmd;
+        R_IOPORT_PinWrite(&g_ioport_ctrl, OLED_CS_PIN, BSP_IO_LEVEL_LOW);
         R_IOPORT_PinWrite(&g_ioport_ctrl, OLED_DC_PIN, BSP_IO_LEVEL_HIGH);
+        R_BSP_SoftwareDelay(1, BSP_DELAY_UNITS_MICROSECONDS);
         R_SPI_Write(&oled_spi_ctrl, data, len, SPI_BIT_WIDTH_8_BITS);
         while(g_spi_status == spi_cmd);
     }
 
-    R_IOPORT_PinWrite(&g_ioport_ctrl, OLED_CS_PIN, BSP_IO_LEVEL_HIGH);
 }
 
 /*Initialize your display and the required peripherals.*/
@@ -224,15 +227,50 @@ static void disp_init(void)
     R_BSP_SoftwareDelay(100, BSP_DELAY_UNITS_MILLISECONDS);
 
     /* ST7789 初始化 */
-    lcd_send_cmd(ST7789_SLPOUT, NULL, 0); 
-    
-    uint8_t colmod = 0x55; /* 16-bit RGB565 */
-    lcd_send_cmd(ST7789_COLMOD, &colmod, 1);
-    
-    uint8_t madctl = 0x00; /* 根据实际屏幕调整方向 */
-    lcd_send_cmd(ST7789_MADCTL, &madctl, 1);
-    
-    lcd_send_cmd(ST7789_DISPON, NULL, 0);
+    lcd_send_cmd(0x11, NULL, 0); // Sleep out
+    R_BSP_SoftwareDelay(120, BSP_DELAY_UNITS_MILLISECONDS);
+
+    uint8_t colmod = 0x05; // 厂家使用的 16-bit 模式值
+    lcd_send_cmd(0x3A, &colmod, 1);
+
+    uint8_t b2[] = {0x0C, 0x0C, 0x00, 0x33, 0x33};
+    lcd_send_cmd(0xB2, b2, 5); // Porch Setting
+
+    uint8_t b7 = 0x35; 
+    lcd_send_cmd(0xB7, &b7, 1); // Gate Control
+
+    uint8_t bb = 0x32; 
+    lcd_send_cmd(0xBB, &bb, 1); // VCOM Setting
+
+    uint8_t c0 = 0x2C;
+    lcd_send_cmd(0xC0, &c0, 1); // LCM Control
+
+    uint8_t c2 = 0x01;
+    lcd_send_cmd(0xC2, &c2, 1); // VDV and VRH Command Enable
+
+    uint8_t c3 = 0x15;
+    lcd_send_cmd(0xC3, &c3, 1); // VRH Set
+
+    uint8_t c4 = 0x20;
+    lcd_send_cmd(0xC4, &c4, 1); // VDV Set
+
+    uint8_t c6 = 0x0F;
+    lcd_send_cmd(0xC6, &c6, 1); // Frame Rate Control
+
+    uint8_t d0[] = {0xA4, 0xA1};
+    lcd_send_cmd(0xD0, d0, 2); // Power Control
+
+    uint8_t e0[] = {0xD0, 0x08, 0x0E, 0x09, 0x09, 0x05, 0x31, 0x33, 0x48, 0x17, 0x14, 0x15, 0x31, 0x34};
+    lcd_send_cmd(0xE0, e0, 14); // Positive Voltage Gamma
+
+    uint8_t e1[] = {0xD0, 0x08, 0x0E, 0x09, 0x09, 0x15, 0x31, 0x33, 0x48, 0x17, 0x14, 0x15, 0x31, 0x34};
+    lcd_send_cmd(0xE1, e1, 14); // Negative Voltage Gamma
+
+    uint8_t madctl = 0x60; // 0x00为竖屏，0x70或0x60为横屏
+    lcd_send_cmd(0x36, &madctl, 1);
+
+    lcd_send_cmd(0x21, NULL, 0); // 开启颜色反相（ST7789常见需求）
+    lcd_send_cmd(0x29, NULL, 0); // Display ON
 }
 
 volatile bool disp_flush_enabled = true;
@@ -256,10 +294,6 @@ void disp_disable_update(void)
  *'lv_disp_flush_ready()' has to be called when finished.*/
 static void disp_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t * color_p)
 {
-    if (g_spi_status != spi_idle)
-    {
-        return;
-    }
 
     if((!disp_flush_enabled)) {
         lv_disp_flush_ready(disp_drv);
@@ -285,9 +319,11 @@ static void disp_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_colo
     /* 准备写入 RAM */
     lcd_send_cmd(ST7789_RAMWR, NULL, 0);
 
+    tx_semaphore_get(&g_oled_spi_semaphore, TX_WAIT_FOREVER);
 
     R_IOPORT_PinWrite(&g_ioport_ctrl, OLED_CS_PIN, BSP_IO_LEVEL_LOW);
     R_IOPORT_PinWrite(&g_ioport_ctrl, OLED_DC_PIN, BSP_IO_LEVEL_HIGH); 
+    R_BSP_SoftwareDelay(1, BSP_DELAY_UNITS_MICROSECONDS);
 
     /* 计算像素字节数 (RGB565 = 2 bytes per pixel) */
     uint32_t size = (uint32_t)((lv_area_get_width(area) * lv_area_get_height(area)) * sizeof(lv_color_t));
