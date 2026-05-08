@@ -259,6 +259,10 @@
       <description>General PWM Timer</description>
       <originalPack>Renesas.RA.6.2.0.pack</originalPack>
     </component>
+    <component apiversion="" class="HAL Drivers" condition="" group="all" subgroup="r_iic_master" variant="" vendor="Renesas" version="6.2.0">
+      <description>I2C Master Interface</description>
+      <originalPack>Renesas.RA.6.2.0.pack</originalPack>
+    </component>
   </raComponentSelection>
   <raElcConfiguration/>
   <raIcuConfiguration/>
@@ -292,7 +296,7 @@
       <property id="module.driver.spi.mosi_idle_value_fixing" value="module.driver.spi.mosi_idle_value_fixing.disable"/>
       <property id="module.driver.spi.parity" value="module.driver.spi.parity_mode.disable"/>
       <property id="module.driver.spi.byte_swap" value="module.driver.spi.byte_swap.disable"/>
-      <property id="module.driver.spi.bitrate" value="4000000"/>
+      <property id="module.driver.spi.bitrate" value="6000000"/>
       <property id="module.driver.spi.spck_delay" value="module.driver.spi.spck_delay.one"/>
       <property id="module.driver.spi.ssl_negation_delay" value="module.driver.spi.ssl_negation_delay.one"/>
       <property id="module.driver.spi.next_access_delay" value="module.driver.spi.next_access_delay.one"/>
@@ -368,9 +372,29 @@
       <property id="module.driver.timer.gtioca_disable_setting" value="module.driver.timer.gtioca_disable_setting.gtioc_disable_prohibited"/>
       <property id="module.driver.timer.gtiocb_disable_setting" value="module.driver.timer.gtiocb_disable_setting.gtioc_disable_prohibited"/>
     </module>
+    <module id="module.driver.i2c_on_iic_master.1669314232">
+      <property id="module.driver.i2c_master.name" value="touchpad_iic"/>
+      <property id="module.driver.i2c_master.channel" value="0"/>
+      <property id="module.driver.i2c_master.rate" value="module.driver.i2c_master.rate.rate_fast"/>
+      <property id="module.driver.i2c_master.rate_value" value="0"/>
+      <property id="module.driver.i2c_master.rise_time_ns" value="120"/>
+      <property id="module.driver.i2c_master.fall_time_ns" value="120"/>
+      <property id="module.driver.i2c_master.duty" value="50"/>
+      <property id="module.driver.i2c_master.slave" value="0x5D"/>
+      <property id="module.driver.i2c_master.addr_mode" value="module.driver.i2c_master.addr_mode.addr_mode_7bit"/>
+      <property id="module.driver.i2c_master.timeout_mode" value="module.driver.i2c_master.timeout_mode.short_mode"/>
+      <property id="module.driver.i2c_master.timeout_scl_low" value="module.driver.i2c_master.timeout_scl_low.enabled"/>
+      <property id="module.driver.i2c_master.p_callback" value="touchpad_iic_callback"/>
+      <property id="module.driver.i2c_master.ipl" value="board.icu.common.irq.priority12"/>
+    </module>
     <object id="rtos.threadx.object.semaphore.1575403450">
       <property id="rtos.threadx.object.semaphore.name" value="OLED SPI Semaphore"/>
       <property id="rtos.threadx.object.semaphore.symbol" value="g_oled_spi_semaphore"/>
+      <property id="rtos.threadx.object.semaphore.count" value="1"/>
+    </object>
+    <object id="rtos.threadx.object.semaphore.1364379756">
+      <property id="rtos.threadx.object.semaphore.name" value="Touchpad IIC Semaphore"/>
+      <property id="rtos.threadx.object.semaphore.symbol" value="g_touchpad_iic_semaphore"/>
       <property id="rtos.threadx.object.semaphore.count" value="1"/>
     </object>
     <context id="_hal.0">
@@ -388,9 +412,15 @@
         <stack module="module.driver.transfer_on_dmac.2017762977" requires="module.driver.spi_on_spi.requires.transfer_tx"/>
       </stack>
       <stack module="module.driver.timer_on_gpt.1206760944"/>
+      <stack module="module.driver.i2c_on_iic_master.1669314232"/>
     </context>
     <config id="config.driver.dmac">
       <property id="config.driver.dmac.param_checking_enable" value="config.driver.dmac.param_checking_enable.bsp"/>
+    </config>
+    <config id="config.driver.iic_master">
+      <property id="config.driver.iic_master.param_checking_enable" value="config.driver.iic_master.param_checking_enable.bsp"/>
+      <property id="config.driver.iic_master.dtc_enable" value="config.driver.iic_master.dtc_enable.disabled"/>
+      <property id="config.driver.iic_master.addr_mode_10_bit_enable" value="config.driver.iic_master.addr_mode_10_bit_enable.disabled"/>
     </config>
     <config id="config.driver.gpt">
       <property id="config.driver.gpt.param_checking_enable" value="config.driver.gpt.param_checking_enable.bsp"/>
@@ -447,10 +477,14 @@
     <symbolicName propertyId="p302.symbolic_name" value="oled_spi_rst"/>
     <symbolicName propertyId="p304.symbolic_name" value="oled_spi_dc"/>
     <symbolicName propertyId="p306.symbolic_name" value="oled_spi_cs"/>
+    <symbolicName propertyId="p402.symbolic_name" value="touchpad_iic_inc"/>
     <pincfg active="true" name="R7FA6M5BF3CFP.pincfg" selected="true" symbol="g_bsp_pin_cfg">
       <configSetting altId="debug0.mode.swd" configurationId="debug0.mode"/>
       <configSetting altId="debug0.swclk.p300" configurationId="debug0.swclk"/>
       <configSetting altId="debug0.swdio.p108" configurationId="debug0.swdio"/>
+      <configSetting altId="iic0.mode.enabled.a" configurationId="iic0.mode"/>
+      <configSetting altId="iic0.scl.p400" configurationId="iic0.scl"/>
+      <configSetting altId="iic0.sda.p401" configurationId="iic0.sda"/>
       <configSetting altId="p108.debug0.swdio" configurationId="p108"/>
       <configSetting altId="p108.gpio_mode.gpio_mode_peripheral" configurationId="p108.gpio_mode"/>
       <configSetting altId="p109.spi0.mosi" configurationId="p109"/>
@@ -465,6 +499,14 @@
       <configSetting altId="p304.gpio_mode.gpio_mode_out.low" configurationId="p304.gpio_mode"/>
       <configSetting altId="p306.output.high" configurationId="p306"/>
       <configSetting altId="p306.gpio_mode.gpio_mode_out.high" configurationId="p306.gpio_mode"/>
+      <configSetting altId="p400.iic0.scl" configurationId="p400"/>
+      <configSetting altId="p400.gpio_speed.gpio_speed_medium" configurationId="p400.gpio_drivecapacity"/>
+      <configSetting altId="p400.gpio_mode.gpio_mode_peripheral" configurationId="p400.gpio_mode"/>
+      <configSetting altId="p401.iic0.sda" configurationId="p401"/>
+      <configSetting altId="p401.gpio_speed.gpio_speed_medium" configurationId="p401.gpio_drivecapacity"/>
+      <configSetting altId="p401.gpio_mode.gpio_mode_peripheral" configurationId="p401.gpio_mode"/>
+      <configSetting altId="p402.output.low" configurationId="p402"/>
+      <configSetting altId="p402.gpio_mode.gpio_mode_out.low" configurationId="p402.gpio_mode"/>
       <configSetting altId="spi0.mode.custom.b" configurationId="spi0.mode"/>
       <configSetting altId="spi0.mosi.p109" configurationId="spi0.mosi"/>
       <configSetting altId="spi0.rspck.p111" configurationId="spi0.rspck"/>

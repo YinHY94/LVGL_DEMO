@@ -974,8 +974,9 @@
 				686,
 				687,
 				688,
-				690,
-				691
+				689,
+				691,
+				692
 			]
 		},
 		{
@@ -1166,7 +1167,7 @@
 			"language" : "CXX",
 			"sourceIndexes" : 
 			[
-				689
+				690
 			]
 		}
 	],
@@ -2037,7 +2038,8 @@
 				688,
 				689,
 				690,
-				691
+				691,
+				692
 			]
 		}
 	],
@@ -2155,6 +2157,12 @@
 			"backtrace" : 3,
 			"compileGroupIndex" : 0,
 			"path" : "ra/fsp/src/r_gpt/r_gpt.c",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 3,
+			"compileGroupIndex" : 0,
+			"path" : "ra/fsp/src/r_iic_master/r_iic_master.c",
 			"sourceGroupIndex" : 0
 		},
 		{

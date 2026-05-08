@@ -169,12 +169,10 @@ void oled_spi_callback(spi_callback_args_t * p_args)
         R_IOPORT_PinWrite(&g_ioport_ctrl, OLED_CS_PIN, BSP_IO_LEVEL_HIGH);
         if (g_spi_status == spi_data)
         {
-            
             lv_disp_flush_ready(&g_disp_drv);
         }
         tx_semaphore_put(&g_oled_spi_semaphore);
         g_spi_status = spi_idle;
-        
     }
 }
 

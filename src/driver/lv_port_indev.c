@@ -4,13 +4,20 @@
  */
 
 /*Copy this file as "lv_port_indev.c" and set this value to "1" to enable content*/
+#include "bsp_pin_cfg.h"
+#include "common_data.h"
+#include "gui_thread.h"
+#include "r_iic_master.h"
+#include "r_ioport.h"
+#include "ra/fsp/src/bsp/mcu/all/bsp_delay.h"
+#include "ra/fsp/src/bsp/mcu/all/bsp_mcu_api.h"
+#include "tx_api.h"
 #if 1
 
 /*********************
  *      INCLUDES
  *********************/
 #include "lv_port_indev.h"
-#include "../../driver/lvgl/lvgl.h"
 
 /*********************
  *      DEFINES
@@ -47,6 +54,9 @@ static void button_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data);
 static int8_t button_get_pressed_id(void);
 static bool button_is_pressed(uint8_t id);
 
+
+static void gt911_i2c_write(uint16_t reg, uint8_t *data, uint32_t len);
+static void gt911_i2c_read(uint16_t reg, uint8_t *data, uint32_t len);
 /**********************
  *  STATIC VARIABLES
  **********************/
@@ -95,7 +105,7 @@ void lv_port_indev_init(void)
     indev_drv.type = LV_INDEV_TYPE_POINTER;
     indev_drv.read_cb = touchpad_read;
     indev_touchpad = lv_indev_drv_register(&indev_drv);
-
+#if 0
     /*------------------
      * Mouse
      * -----------------*/
@@ -169,11 +179,46 @@ void lv_port_indev_init(void)
         {40, 100},  /*Button 1 -> x:40; y:100*/
     };
     lv_indev_set_button_points(indev_button, btn_points);
+#endif
 }
+
+void touchpad_iic_callback(i2c_master_callback_args_t *p_args)
+{
+    switch (p_args->event)
+    {
+        case I2C_MASTER_EVENT_TX_COMPLETE:
+        case I2C_MASTER_EVENT_RX_COMPLETE:
+        case I2C_MASTER_EVENT_ABORTED: // 即使失败也要释放信号量，防止主线程死等
+             tx_semaphore_put(&g_touchpad_iic_semaphore);
+             break;
+        default:
+             break;
+    }
+}
+
 
 /**********************
  *   STATIC FUNCTIONS
  **********************/
+static void gt911_i2c_write(uint16_t reg, uint8_t *data, uint32_t len) {
+    uint8_t buf[len + 2];
+    buf[0] = (uint8_t)(reg >> 8);
+    buf[1] = (uint8_t)(reg & 0xFF);
+    memcpy(&buf[2], data, len);
+    R_IIC_MASTER_Write(&touchpad_iic_ctrl, buf, len + 2, false);
+    tx_semaphore_get(&g_touchpad_iic_semaphore, TX_WAIT_FOREVER);
+}
+
+void gt911_i2c_read(uint16_t reg, uint8_t *data, uint32_t len) {
+    uint8_t reg_buf[2] = {(uint8_t)(reg >> 8), (uint8_t)(reg & 0xFF)};
+    // 先写寄存器地址
+    R_IIC_MASTER_Write(&touchpad_iic_ctrl, reg_buf, 2, true);
+    tx_semaphore_get(&g_touchpad_iic_semaphore, TX_WAIT_FOREVER);
+    // 再读数据
+    
+    R_IIC_MASTER_Read(&touchpad_iic_ctrl, data, len, false);
+    tx_semaphore_get(&g_touchpad_iic_semaphore, TX_WAIT_FOREVER);
+}
 
 /*------------------
  * Touchpad
@@ -182,7 +227,13 @@ void lv_port_indev_init(void)
 /*Initialize your touchpad*/
 static void touchpad_init(void)
 {
-    /*Your code comes here*/
+    R_IIC_MASTER_Open(&touchpad_iic_ctrl, &touchpad_iic_cfg);
+    R_IOPORT_PinCfg(&g_ioport_ctrl, touchpad_iic_inc, 
+                ((uint32_t) IOPORT_CFG_PORT_DIRECTION_INPUT));
+    R_BSP_SoftwareDelay(10, BSP_DELAY_UNITS_MILLISECONDS);
+    
+    // uint8_t id_buf[4];
+    // gt911_i2c_read(0x8140, id_buf, 4); // GT_ID_ADDR
 }
 
 /*Will be called by the library to read the touchpad*/
@@ -208,18 +259,31 @@ static void touchpad_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data)
 /*Return true is the touchpad is pressed*/
 static bool touchpad_is_pressed(void)
 {
-    /*Your code comes here*/
+    uint8_t status;
+    // 读取状态寄存器 GT_Point_ADDR (0x814E)
+    gt911_i2c_read(0x814E, &status, 1);
 
+    if ((status & 0x80) && ((status & 0x0F) > 0)) {
+        // 关键：读完坐标后必须将 0x814E 清零，否则 GT911 不会更新下一次数据
+        uint8_t dummy = 0;
+        gt911_i2c_write(0x814E, &dummy, 1); 
+        return true;
+    }
+    
+    // 如果没按下，也要尝试清零以防异常
+    uint8_t dummy = 0;
+    gt911_i2c_write(0x814E, &dummy, 1);
     return false;
 }
 
 /*Get the x and y coordinates if the touchpad is pressed*/
 static void touchpad_get_xy(lv_coord_t * x, lv_coord_t * y)
 {
-    /*Your code comes here*/
-
-    (*x) = 0;
-    (*y) = 0;
+    uint8_t data[4];
+    // 读取第一个触摸点的坐标地址 (0x8150)
+    gt911_i2c_read(0x8150, data, 4);
+    *x = (lv_coord_t)(data[2] | (data[3] << 8));
+    *y = 240-( (lv_coord_t)(data[0] | (data[1] << 8)) );
 }
 
 /*------------------

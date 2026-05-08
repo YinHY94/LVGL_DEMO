@@ -8,6 +8,64 @@ TX_THREAD gui_thread;
                 static uint8_t gui_thread_stack[8192] BSP_PLACE_IN_SECTION(BSP_UNINIT_SECTION_PREFIX ".stack.gui_thread") BSP_ALIGN_VARIABLE(BSP_STACK_ALIGNMENT);
                 void tx_startup_err_callback(void * p_instance, void * p_data);
                 void tx_startup_common_init(void);
+iic_master_instance_ctrl_t touchpad_iic_ctrl;
+const iic_master_extended_cfg_t touchpad_iic_extend =
+{
+    .timeout_mode             = IIC_MASTER_TIMEOUT_MODE_SHORT,
+    .timeout_scl_low          = IIC_MASTER_TIMEOUT_SCL_LOW_ENABLED,
+    .smbus_operation         = 0,
+    /* Actual calculated bitrate: 396825. Actual calculated duty cycle: 51%. */ .clock_settings.brl_value = 25, .clock_settings.brh_value = 26, .clock_settings.cks_value = 1, .clock_settings.sddl_value = 0, .clock_settings.dlcs_value = 0,
+};
+const i2c_master_cfg_t touchpad_iic_cfg =
+{
+    .channel             = 0,
+    .rate                = I2C_MASTER_RATE_FAST,
+    .slave               = 0x5D,
+    .addr_mode           = I2C_MASTER_ADDR_MODE_7BIT,
+#define RA_NOT_DEFINED (1)
+#if (RA_NOT_DEFINED == RA_NOT_DEFINED)
+                .p_transfer_tx       = NULL,
+#else
+                .p_transfer_tx       = &RA_NOT_DEFINED,
+#endif
+#if (RA_NOT_DEFINED == RA_NOT_DEFINED)
+                .p_transfer_rx       = NULL,
+#else
+                .p_transfer_rx       = &RA_NOT_DEFINED,
+#endif
+#undef RA_NOT_DEFINED
+    .p_callback          = touchpad_iic_callback,
+    .p_context           = NULL,
+#if defined(VECTOR_NUMBER_IIC0_RXI)
+    .rxi_irq             = VECTOR_NUMBER_IIC0_RXI,
+#else
+    .rxi_irq             = FSP_INVALID_VECTOR,
+#endif
+#if defined(VECTOR_NUMBER_IIC0_TXI)
+    .txi_irq             = VECTOR_NUMBER_IIC0_TXI,
+#else
+    .txi_irq             = FSP_INVALID_VECTOR,
+#endif
+#if defined(VECTOR_NUMBER_IIC0_TEI)
+    .tei_irq             = VECTOR_NUMBER_IIC0_TEI,
+#else
+    .tei_irq             = FSP_INVALID_VECTOR,
+#endif
+#if defined(VECTOR_NUMBER_IIC0_ERI)
+    .eri_irq             = VECTOR_NUMBER_IIC0_ERI,
+#else
+    .eri_irq             = FSP_INVALID_VECTOR,
+#endif
+    .ipl                 = (12),
+    .p_extend            = &touchpad_iic_extend,
+};
+/* Instance structure to use this module. */
+const i2c_master_instance_t touchpad_iic =
+{
+    .p_ctrl        = &touchpad_iic_ctrl,
+    .p_cfg         = &touchpad_iic_cfg,
+    .p_api         = &g_i2c_master_on_iic
+};
 gpt_instance_ctrl_t lvgl_tick_timer_ctrl;
 #if 0
 const gpt_extended_pwm_cfg_t lvgl_tick_timer_pwm_extend =
@@ -201,7 +259,7 @@ const spi_extended_cfg_t oled_spi_ext_cfg =
     .parity              = SPI_PARITY_MODE_DISABLE,
     .byte_swap           = SPI_BYTE_SWAP_DISABLE,
     .spck_div            = {
-        /* Actual calculated bitrate: 3846154. */ .spbr = 12, .brdv = 0
+        /* Actual calculated bitrate: 5555556. */ .spbr = 8, .brdv = 0
     },
     .spck_delay          = SPI_DELAY_COUNT_1,
     .ssl_negation_delay  = SPI_DELAY_COUNT_1,

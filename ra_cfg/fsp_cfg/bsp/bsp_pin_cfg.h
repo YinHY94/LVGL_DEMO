@@ -9,6 +9,7 @@ FSP_HEADER
 #define oled_spi_rst (BSP_IO_PORT_03_PIN_02)
 #define oled_spi_dc (BSP_IO_PORT_03_PIN_04)
 #define oled_spi_cs (BSP_IO_PORT_03_PIN_06)
+#define touchpad_iic_inc (BSP_IO_PORT_04_PIN_02)
 
 extern const ioport_cfg_t g_bsp_pin_cfg; /* R7FA6M5BF3CFP.pincfg */
 
